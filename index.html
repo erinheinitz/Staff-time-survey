@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff time allocation survey</title>
+<style>
+  :root{
+    --ink:#1f2421;
+    --ink-soft:#5b645e;
+    --line:#dfe3df;
+    --bg:#f7f8f6;
+    --card:#ffffff;
+    --accent:#3c6e52;
+    --accent-soft:#e7f0ea;
+    --warn:#b4532a;
+    --warn-soft:#faeee7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 120px;}
+  h1{font-size:22px;font-weight:600;margin:0 0 6px;}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0 0 28px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+    margin-bottom:18px;
+  }
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  label.top{display:block;font-size:13px;font-weight:600;margin-bottom:6px;}
+  select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:14px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .cat-title{
+    font-size:15px;
+    font-weight:600;
+    margin:0 0 4px;
+    padding-top:4px;
+  }
+  .cat-hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .row:last-child{border-bottom:none;}
+  .row-label{flex:1;font-size:13.5px;}
+  .pct-input{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    width:84px;
+    flex-shrink:0;
+  }
+  .pct-input input{
+    width:56px;
+    padding:6px 6px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:14px;
+    text-align:right;
+  }
+  .pct-input input:focus, select:focus, .other-name:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 2px var(--accent-soft);
+  }
+  .pct-sign{color:var(--ink-soft);font-size:13px;}
+  .other-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    padding:9px 0;
+  }
+  .other-name{
+    flex:1;
+    padding:7px 9px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:13.5px;
+  }
+
+  .reflect-q{margin-bottom:22px;}
+  .reflect-q:last-child{margin-bottom:0;}
+  .reflect-q p.q-text{
+    font-size:13.5px;
+    font-weight:600;
+    margin:0 0 8px;
+  }
+  .yesno{
+    display:flex;
+    gap:16px;
+    margin-bottom:10px;
+  }
+  .yesno label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:13.5px;
+    cursor:pointer;
+  }
+  .reflect-q textarea{
+    width:100%;
+    min-height:70px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:13.5px;
+    font-family:inherit;
+    resize:vertical;
+  }
+  .reflect-q textarea:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 2px var(--accent-soft);
+  }
+
+  .totalbar{
+    position:sticky;
+    bottom:0;
+    left:0;
+    right:0;
+    background:var(--card);
+    border-top:1px solid var(--line);
+    box-shadow:0 -2px 10px rgba(0,0,0,0.05);
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:760px;
+    margin:0 auto;
+    border-radius:10px 10px 0 0;
+  }
+  .totalbar.floating{
+    position:fixed;
+    max-width:760px;
+    width:calc(100% - 40px);
+  }
+  .total-label{font-size:13px;color:var(--ink-soft);}
+  .total-value{font-size:22px;font-weight:600;}
+  .total-value.ok{color:var(--accent);}
+  .total-value.off{color:var(--warn);}
+  .total-note{font-size:12px;margin-top:2px;}
+  .total-note.ok{color:var(--accent);}
+  .total-note.off{color:var(--warn);}
+  .submit-btn{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:11px 22px;
+    border-radius:7px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .submit-btn:disabled{
+    background:#c7cbc6;
+    cursor:not-allowed;
+  }
+  .spacer{height:90px;}
+  .status-msg{
+    text-align:center;
+    padding:60px 20px;
+  }
+  .status-msg h2{font-size:20px;margin-bottom:8px;}
+  .status-msg p{color:var(--ink-soft);font-size:14px;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+  <h1>Staff time allocation survey</h1>
+
+  <div class="card">
+    <div class="field">
+      <label class="top">First &amp; Last Name *</label>
+      <input type="text" id="fullname" class="other-name" placeholder="Type your full name" required>
+    </div>
+    <div class="field">
+      <label class="top">Please select your department *</label>
+      <select id="department" required>
+        <option value="">Select…</option>
+        <option>Adult Ministries</option>
+        <option>Communications</option>
+        <option>Counseling</option>
+        <option>Executives</option>
+        <option>Facilities</option>
+        <option>Kids Ministry</option>
+        <option>Outreach (global, local, food bank)</option>
+        <option>Residency</option>
+        <option>Student Ministry</option>
+        <option>Worship/Tech</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="top">Select your role/title *</label>
+      <select id="role" required>
+        <option value="">Select…</option>
+        <option>Assistant Director</option>
+        <option>Assistant Manager</option>
+        <option>Coordinator</option>
+        <option>Counselor</option>
+        <option>Director</option>
+        <option>Facilities Tech</option>
+        <option>Finance Manager/Assistant</option>
+        <option>Graphic/Print Designer</option>
+        <option>Maintenance Tech</option>
+        <option>Manager/Producer</option>
+        <option>Ministry Assistant</option>
+        <option>Pastor</option>
+        <option>Resident</option>
+        <option>Tech Assistant</option>
+        <option>Worship Leader</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+
+  <p class="sub">On an average week, tell us what percentage of your time goes to each activity. Leave a field blank if it doesn't apply. Your total across every field must add up to 100%.</p>
+
+  <div id="categories"></div>
+
+  <div class="card">
+    <div class="cat-title">Other work</div>
+    <p class="cat-hint">If you have an area of work not mentioned above, add it here with the percentage of time you spend on it.</p>
+    <div class="other-row">
+      <input type="text" class="other-name" id="other-name" placeholder="Describe the task">
+      <div class="pct-input">
+        <input type="number" min="0" max="100" step="1" id="other-pct" data-pct>
+        <span class="pct-sign">%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cat-title">A few final questions</div>
+
+    <div class="reflect-q">
+      <p class="q-text">1. Do you have a clear understanding of the most important priorities for your role? If not, where do you need more clarity?</p>
+      <div class="yesno">
+        <label><input type="radio" name="q1" value="Yes"> Yes</label>
+        <label><input type="radio" name="q1" value="No"> No</label>
+      </div>
+      <textarea id="q1-comments" placeholder="Comments (optional)"></textarea>
+    </div>
+
+    <div class="reflect-q">
+      <p class="q-text">2. Do you feel you have enough time each week to accomplish the expectations of your position? If not, what consistently gets left undone or rushed?</p>
+      <div class="yesno">
+        <label><input type="radio" name="q2" value="Yes"> Yes</label>
+        <label><input type="radio" name="q2" value="No"> No</label>
+      </div>
+      <textarea id="q2-comments" placeholder="Comments (optional)"></textarea>
+    </div>
+
+    <div class="reflect-q">
+      <p class="q-text">3. Are there any aspects of your role, workload, or expectations that you feel are not sustainable? If so, what changes would make them more manageable?</p>
+      <div class="yesno">
+        <label><input type="radio" name="q3" value="Yes"> Yes</label>
+        <label><input type="radio" name="q3" value="No"> No</label>
+      </div>
+      <textarea id="q3-comments" placeholder="Comments (optional)"></textarea>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+</div>
+
+<div class="totalbar" id="totalbar">
+  <div>
+    <div class="total-label">Total allocated</div>
+    <div class="total-value off" id="total-value">0%</div>
+    <div class="total-note off" id="total-note">Needs to reach 100%</div>
+  </div>
+  <button class="submit-btn" id="submit-btn" disabled>Submit</button>
+</div>
+
+<script>
+const categories = [
+  {
+    name: "Administration",
+    keyPrefix: "Administration",
+    items: [
+      "Database entry",
+      "Managing finances (i.e. Concur, budgets)",
+      "Calendar management (i.e. making calendar requests, reserving rooms, etc.)",
+      "Placing orders/ministry purchases",
+      "Event planning/prep (i.e. upcoming conference, Sunday services, weekly program)",
+      "Event set up/tear down",
+      "Sunday morning responsibilities (i.e. kid's ministry check-ins, or any responsibilities for your position)",
+      "Attending your ministry's weekly events/programs (i.e. teaching, running the event, etc.)",
+      "Attending staff meetings/team meetings/chapel",
+      "Volunteer coordination (i.e. scheduling volunteers)"
+    ],
+    keys: [
+      "Administration - Database entry",
+      "Administration - Managing finances (i.e. Concur, budgets)",
+      "Administration - Calendar management",
+      "Administration - Placing orders/ministry purchases",
+      "Administration - Event planning/prep",
+      "Administration - Event set up/tear down",
+      "Administration - Sunday morning responsibilities",
+      "Administration - Attending weekly events/programs",
+      "Administration - Attending staff/team meetings/chapel",
+      "Administration - Volunteer coordination"
+    ]
+  },
+  {
+    name: "Communication",
+    keyPrefix: "Communication",
+    items: [
+      "Returning emails/phone calls",
+      "Parent communications",
+      "Website management/social media",
+      "Graphics/video design (i.e. PowerPoint slides, flyers, videos)",
+      "Socializing with other staff"
+    ],
+    keys: [
+      "Communication - Returning emails/phone calls",
+      "Communication - Parent communications",
+      "Communication - Website management/social media",
+      "Communication - Graphics/video design",
+      "Communication - Socializing with other staff"
+    ]
+  },
+  {
+    name: "Leadership/Pastoral Care",
+    keyPrefix: "Leadership",
+    items: [
+      "Meetings with ministry members",
+      "Meetings with your volunteer leaders",
+      "Counseling or counseling prep",
+      "Sermon/teaching prep/studying"
+    ],
+    keys: [
+      "Leadership - Meetings with ministry members",
+      "Leadership - Meetings with volunteer leaders",
+      "Leadership - Counseling or counseling prep",
+      "Leadership - Sermon/teaching prep/studying"
+    ]
+  },
+  {
+    name: "General Building Maintenance",
+    keyPrefix: "Maintenance",
+    items: [
+      "Cleaning",
+      "Repairs & maintenance projects"
+    ],
+    keys: [
+      "Maintenance - Cleaning",
+      "Maintenance - Repairs & maintenance projects"
+    ]
+  },
+  {
+    name: "Miscellaneous",
+    keyPrefix: "Misc",
+    items: [
+      "Handling unexpected crises",
+      "Travel (for conferences, global outreach, etc.)"
+    ],
+    keys: [
+      "Misc - Handling unexpected crises",
+      "Misc - Travel"
+    ]
+  }
+];
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgIZU4eXitid4kmQIiPrBb2St5jtz1qe4GZQoPqyczQgINCAH-0cStWfhWRfOLljlLGw/exec";
+
+const container = document.getElementById('categories');
+
+categories.forEach((cat, ci) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const title = document.createElement('div');
+  title.className = 'cat-title';
+  title.textContent = cat.name;
+  card.appendChild(title);
+
+  cat.items.forEach((item, ii) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const label = document.createElement('div');
+    label.className = 'row-label';
+    label.textContent = item + ':';
+
+    const pctWrap = document.createElement('div');
+    pctWrap.className = 'pct-input';
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.max = '100';
+    input.step = '1';
+    input.setAttribute('data-pct', '');
+    input.id = `pct-${ci}-${ii}`;
+
+    const sign = document.createElement('span');
+    sign.className = 'pct-sign';
+    sign.textContent = '%';
+
+    pctWrap.appendChild(input);
+    pctWrap.appendChild(sign);
+    row.appendChild(label);
+    row.appendChild(pctWrap);
+    card.appendChild(row);
+  });
+
+  container.appendChild(card);
+});
+
+function computeTotal(){
+  const inputs = document.querySelectorAll('[data-pct]');
+  let total = 0;
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    if(!isNaN(v)) total += v;
+  });
+  return Math.round(total * 100) / 100;
+}
+
+function updateTotal(){
+  const total = computeTotal();
+  const valueEl = document.getElementById('total-value');
+  const noteEl = document.getElementById('total-note');
+  const btn = document.getElementById('submit-btn');
+  valueEl.textContent = total + '%';
+
+  if(total === 100){
+    valueEl.className = 'total-value ok';
+    noteEl.className = 'total-note ok';
+    noteEl.textContent = 'Total adds up to 100%';
+    btn.disabled = false;
+  } else if(total > 100){
+    valueEl.className = 'total-value off';
+    noteEl.className = 'total-note off';
+    noteEl.textContent = (Math.round((total-100)*100)/100) + '% over 100%, please adjust';
+    btn.disabled = true;
+  } else {
+    valueEl.className = 'total-value off';
+    noteEl.className = 'total-note off';
+    noteEl.textContent = (Math.round((100-total)*100)/100) + '% remaining to reach 100%';
+    btn.disabled = true;
+  }
+}
+
+document.addEventListener('input', (e) => {
+  if(e.target.matches('[data-pct]')){
+    updateTotal();
+  }
+});
+
+document.getElementById('submit-btn').addEventListener('click', () => {
+  const fullname = document.getElementById('fullname').value.trim();
+  const dept = document.getElementById('department').value;
+  const role = document.getElementById('role').value;
+
+  if(!fullname){
+    alert('Please enter your first and last name before submitting.');
+    return;
+  }
+  if(!dept || !role){
+    alert('Please select your department and role before submitting.');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const values = {};
+  categories.forEach((cat, ci) => {
+    cat.items.forEach((item, ii) => {
+      const val = document.getElementById(`pct-${ci}-${ii}`).value;
+      const key = cat.keys[ii];
+      values[key] = val ? Number(val) : "";
+    });
+  });
+
+  const getRadio = (name) => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : "";
+  };
+
+  const payload = {
+    name: fullname,
+    department: dept,
+    role: role,
+    values: values,
+    otherName: document.getElementById('other-name').value,
+    otherPercent: document.getElementById('other-pct').value || "",
+    total: computeTotal(),
+    q1: getRadio('q1'),
+    q1Comments: document.getElementById('q1-comments').value,
+    q2: getRadio('q2'),
+    q2Comments: document.getElementById('q2-comments').value,
+    q3: getRadio('q3'),
+    q3Comments: document.getElementById('q3-comments').value
+  };
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="status-msg">
+        <h2>Thanks, response recorded</h2>
+        <p>Name: ${fullname}<br>Department: ${dept}<br>Role: ${role}<br>Total: ${computeTotal()}%</p>
+      </div>
+    `;
+    document.getElementById('totalbar').style.display = 'none';
+  })
+  .catch((err) => {
+    alert('Something went wrong submitting your response. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+    console.error(err);
+  });
+});
+
+updateTotal();
+</script>
+</body>
+</html>
